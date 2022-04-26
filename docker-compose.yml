@@ -1,66 +1,38 @@
 version: "3"
 services:
-  # zookeeper:
-  #   image: 'wurstmeister/zookeeper'
-  #   container_name: zookeeper
-  #   ports:
-  #     - "2181:2181"
-  #   environment:
-  #     - ZOOKEEPER_CLIENT_PORT=2181
-  #     - ZOOKEEPER_TICK_TIME=2000
-  # kafka: 
-  #   image: 'wurstmeister/kafka'
-  #   container_name: kakfa
-  #   ports:
-  #     - "9092:9092"
-  #     - "9997:9997"
-  #   environment:
-  #     - 'KAFKA_BROKER_ID=1'
-  #     - 'ALLOW_PLAINTEXT_LISTENER=yes'
-  #     - 'KAFKA_ADVERTISED_HOST_NAME=kafka'
-  #     - 'KAFKA_LISTENERS=EXTERNAL_SAME_HOST://:29092,EXTERNAL_DIFFERENT_HOST://:29093,INTERNAL://:9092'
-  #     - 'KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:9092,EXTERNAL_SAME_HOST://localhost:29092,EXTERNAL_DIFFERENT_HOST://172.28.176.1:29093'
-  #     - 'KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT,EXTERNAL_DIFFERENT_HOST:PLAINTEXT'
-  #     - 'KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL'
-  #     - 'KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181'
-  #     - 'KAFKA_CREATE_TOPICS=ProfileTopic:1:1,EmailTopic:1:1'
-  #     - 'KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1'
-  #   depends_on:
-  #     - zookeeper
-
-  profile-listener:
-    container_name: profile-listener
+  demo-service-one:
+    container_name: demo-service-one
     build:
       context: .
       args:
-        - dirname=profile-listener
-    image: profile-listener
+        - dirname=demo-service-one
+    image: demo-service-one
     logging:
       driver: "json-file"
       options:
         max-size: "2048m"
     ports:
-        - 8083:8083
-  admin:
-    container_name: admin
+        - 8080:8080
+  demo-service-two:
+    container_name: demo-service-two
     build:
       context: .
       args:
-        - dirname=admin
-    image: admin
+        - dirname=demo-service-two
+    image: demo-service-two
     logging:
       driver: "json-file"
       options:
         max-size: "2048m"
     ports:
         - 8081:8081 
-  profile:
-    container_name: profile
+  demo-service-three:
+    container_name: demo-service-three
     build:
       context: .
       args:
-        - dirname=profile
-    image: profile
+        - dirname=demo-service-three
+    image: demo-service-three
     logging:
       driver: "json-file"
       options:
