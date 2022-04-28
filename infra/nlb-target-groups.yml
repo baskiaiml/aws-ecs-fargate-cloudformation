@@ -1,0 +1,67 @@
+Description: Target Groups for network load balancer, here target groups are nothing but fargate services running in container ports
+
+Parameters:
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC the Application Load Balancer should be deployed to
+  DemoOneContainerPort:
+    Description: Demo Service One Container Port
+    Type: String
+  DemoTwoContainerPort:
+    Description: Demo Service Two Container Port
+    Type: String
+  DemoThreeContainerPort:
+    Description: Demo Service Three Container Port
+    Type: String
+
+Resources:
+  TargetGroupDemoOne:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthyThresholdCount: 10
+      UnhealthyThresholdCount: 10
+      TargetType: ip
+      # Only use the stack name here because the full name can only be 32 characters, service prefix + stack name is often too long
+      Name: TargetGroupDemoOne
+      Port: !Ref DemoOneContainerPort
+      Protocol: TCP
+      VpcId: !Ref VPC
+  TargetGroupDemoTwo:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthyThresholdCount: 10
+      UnhealthyThresholdCount: 10
+      TargetType: ip
+      # Only use the stack name here because the full name can only be 32 characters, service prefix + stack name is often too long
+      Name: TargetGroupDemoTwo
+      Port: !Ref DemoTwoContainerPort
+      Protocol: TCP
+      VpcId: !Ref VPC
+  TargetGroupDemoThree:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthyThresholdCount: 10
+      UnhealthyThresholdCount: 10
+      TargetType: ip
+      # Only use the stack name here because the full name can only be 32 characters, service prefix + stack name is often too long
+      Name: TargetGroupDemoThree
+      Port: !Ref DemoThreeContainerPort
+      Protocol: TCP
+      VpcId: !Ref VPC
+
+Outputs:
+  TargetGroupDemoOne:
+    Description: Fargate Service One Target
+    Value: !Ref TargetGroupDemoOne
+  TargetGroupDemoTwo:
+    Description: Fargate Service One Target
+    Value: !Ref TargetGroupDemoTwo
+  TargetGroupDemoThree:
+    Description: Fargate Service One Target
+    Value: !Ref TargetGroupDemoThree

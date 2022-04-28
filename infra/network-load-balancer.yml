@@ -1,0 +1,96 @@
+Description: Private network load balancer
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC the Application Load Balancer should be deployed to
+  Subnets:
+    Description: Choose which subnets the Application Load Balancer should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+  SecurityGroup:
+    Description: Select the Security Group to apply to the Application Load Balancer
+    Type: AWS::EC2::SecurityGroup::Id
+  DemoOneContainerPort:
+    Description: Demo Service One Container Port
+    Type: String
+  DemoTwoContainerPort:
+    Description: Demo Service Two Container Port
+    Type: String
+  DemoThreeContainerPort:
+    Description: Demo Service Three Container Port
+    Type: String
+  PublicSubnet1:
+    Description: Public Subnet1 created in the VPC
+    Type: String
+  PublicSubnet2:
+    Description: Public Subnet2 created in the VPC
+    Type: String
+  PrivateSubnet1:
+    Description: Private Subnet1 created in the VPC
+    Type: String
+  PrivateSubnet2:
+    Description: Private Subnet2 created in the VPC
+    Type: String
+
+Resources:
+  NetworkLoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing networkload balancer
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        # Allow access to NLB from anywhere on the internet
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: !Ref DemoOneContainerPort
+          ToPort: !Ref DemoOneContainerPort
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: !Ref DemoTwoContainerPort
+          ToPort: !Ref DemoTwoContainerPort
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: !Ref DemoThreeContainerPort
+          ToPort: !Ref DemoThreeContainerPort
+  # Create a rule on the load balancer for routing traffic to the target group
+  LoadBalancerListenerDemoOne:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroupDemoOne
+          Type: forward
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: !Ref DemoOneContainerPort
+      Protocol: TCP
+  LoadBalancerListenerDemoTwo:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroupDemoTwo
+          Type: forward
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: !Ref DemoTwoContainerPort
+      Protocol: TCP
+  LoadBalancerListenerDemoThree:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroupDemoThree
+          Type: forward
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: !Ref DemoThreeContainerPort
+      Protocol: TCP
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      Subnets:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      Tags:
+        - Key: StackName
+          Value: !Ref AWS::StackName
+      Type: network

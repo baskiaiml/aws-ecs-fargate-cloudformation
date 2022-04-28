@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description:  Create a VPC with public and private subnets.
+
+#This template deploys a VPC, with a pair of public and private subnets spread 
+#across two Availabilty Zones. It deploys an Internet Gateway, with a default 
+#  route on the public subnets. It deploys a pair of NAT Gateways (one in each AZ), 
+#  and default routes for them in the private subnets.
+#  It then deploys a highly available ECS cluster using an AutoScaling Group, with 
+#  ECS hosts distributed across multiple Availability Zones. 
+#  Finally, it deploys  three example ECS services from containers published in 
+#  Amazon EC2 Container Registry (Amazon ECR)
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Container configuration"
+        Parameters:
+          - SourceAccessCIDR
+      - Label:
+          default: "AZ configuration"
+        Parameters:
+          - AvailabilityZones
+Parameters:
+  AvailabilityZones:
+    Description: "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved."
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+  PrivateSubnet1CIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.0.0/19
+    Description: CIDR block for the private subnet located in Availability Zone 1
+    Type: String
+  PrivateSubnet2CIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.32.0/19
+    Description: CIDR block for the private subnet located in Availability Zone 2
+    Type: String
+  PublicSubnet1CIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.128.0/20
+    Description: CIDR block for the public DMZ subnet located in Availability Zone 1
+    Type: String
+  PublicSubnet2CIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.144.0/20
+    Description: CIDR block for the public DMZ subnet located in Availability Zone 2
+    Type: String
+  VPCCIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.0.0/16
+    Description: CIDR block for the VPC
+    Type: String
+  SourceAccessCIDR:
+    Type: String
+    Description: The CIDR IP range that is permitted to access the running tasks. We recommend that you set this value to a trusted IP range.
+    Default: 0.0.0.0/0
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+  Subnets:
+    Description: Choose which subnets the Application Load Balancer should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+  SecurityGroup:
+    Description: Select the Security Group to apply to the Network Load Balancer
+    Type: AWS::EC2::SecurityGroup::Id
+  DemoOneContainerPort:
+    Description: Demo Service One Container Port
+    Type: String
+  DemoTwoContainerPort:
+    Description: Demo Service Two Container Port
+    Type: String
+  DemoThreeContainerPort:
+    Description: Demo Service Three Container Port
+    Type: String
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-ecs-fargate-cloudformation.s3.ap-south-1.amazonaws.com/infrastructure/vpc.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPCCIDR: 10.180.0.0/16
+        PublicSubnet1CIDR: 10.180.8.0/21
+        PublicSubnet2CIDR: 10.180.16.0/21
+        PrivateSubnet1CIDR: 10.180.24.0/21
+        PrivateSubnet2CIDR: 10.180.32.0/21
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-ecs-fargate-cloudformation.s3.ap-south-1.amazonaws.com/infrastructure/security-groups.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+  TargetGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:  https://aws-ecs-fargate-cloudformation.s3.ap-south-1.amazonaws.com/infrastructure/nlb-target-groups.yml
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+        DemoOneContainerPort: !Ref DemoOneContainerPort
+        DemoTwoContainerPort: !Ref DemoTwoContainerPort
+        DemoThreeContainerPort: !Ref DemoThreeContainerPort
+  NLB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-ecs-fargate-cloudformation.s3.ap-south-1.amazonaws.com/infrastructure/network-load-balancer.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+        Subnets: !GetAtt VPC.Outputs.PublicSubnets
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+        PublicSubnet1: !GetAtt VPC.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt VPC.Outputs.PublicSubnet2
+        DemoOneContainerPort: !Ref DemoOneContainerPort
+        DemoTwoContainerPort: !Ref DemoTwoContainerPort
+        DemoThreeContainerPort: !Ref DemoThreeContainerPort
