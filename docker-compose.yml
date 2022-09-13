@@ -4,6 +4,7 @@ services:
     container_name: demo-service-one
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         - dirname=demo-service-one
     image: demo-service-one
@@ -17,6 +18,7 @@ services:
     container_name: demo-service-two
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         - dirname=demo-service-two
     image: demo-service-two
@@ -30,6 +32,7 @@ services:
     container_name: demo-service-three
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         - dirname=demo-service-three
     image: demo-service-three
