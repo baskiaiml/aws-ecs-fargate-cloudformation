@@ -22,6 +22,7 @@ phases:
     commands:
       - echo Build started for demo-service-one
       - echo Building the Docker image...
+      - echo Repo URL is $DEMO_REPO_URL
       - ls -a
       - docker-compose build
       - docker images     
