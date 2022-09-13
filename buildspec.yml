@@ -10,9 +10,9 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION
-      - DEMOONE_REPOSITORY_URI=DEMO_REPO_URL/demo-service-one
-      - DEMOTWO_REPOSITORY_URI=DEMO_REPO_URL/demo-service-two
-      - DEMOTHREE_REPOSITORY_URI=DEMO_REPO_URL/demo-service-three
+      - DEMOONE_REPOSITORY_URI=$DEMO_REPO_URL/demo-service-one
+      - DEMOTWO_REPOSITORY_URI=$DEMO_REPO_URL/demo-service-two
+      - DEMOTHREE_REPOSITORY_URI=$DEMO_REPO_URL/demo-service-three
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - ONE_IMAGE_TAG=demo-service-one-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
       - TWO_IMAGE_TAG=demo-service-two-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
@@ -44,7 +44,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - echo Pushing docker images into
-      - echo $(aws ecr get-login-password)|docker login --password-stdin --username AWS DEMO_REPO_URL
+      - echo $(aws ecr get-login-password)|docker login --password-stdin --username AWS $DEMO_REPO_URL
 
       - docker push $DEMOONE_REPOSITORY_URI:$ONE_IMAGE_TAG
       - docker push $DEMOONE_REPOSITORY_URI:latest
