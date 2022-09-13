@@ -22,7 +22,6 @@ phases:
     commands:
       - echo Build started for demo-service-one
       - echo Building the Docker image...
-      - cd skill-tracker-service
       - ls -a
       - docker-compose build
       - docker images     
