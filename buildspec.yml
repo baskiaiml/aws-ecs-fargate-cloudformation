@@ -1,8 +1,8 @@
 version: 0.2
 
-env:
-  parameter-store:
-    DEMO_REPO_URL: "demo_repo_url"
+#env:
+# parameter-store:
+ #  DEMO_REPO_URL: "demo_repo_url"
 
 phases:
   pre_build:
