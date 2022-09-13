@@ -7,11 +7,11 @@ COPY pom.xml pom.xml
 COPY $dirname/pom.xml $dirname/pom.xml
 
 # Resolve dependencies for the main application
-RUN mvn -q -ntp -B -pl $dirname -am dependency:go-offline -Dmaven.test.skip=true
+RUN mvn -q -ntp -B $dirname -am dependency:go-offline -Dmaven.test.skip=true
 # Copy sources for main application
 COPY $dirname $dirname
 # Package the common and application modules together
-RUN mvn -q -ntp -B -pl $dirname package -Dmaven.test.skip=true
+RUN mvn -q -ntp -B $dirname package -Dmaven.test.skip=true
 
 RUN mkdir -p /jar-layers
 WORKDIR /jar-layers
